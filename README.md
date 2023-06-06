@@ -1,58 +1,28 @@
-# Home Assistant Operating System
+﻿# Home Assistant Operating System (HAOS) build repository for the Orange Pi 4 LTS (RK3399)
 
-Home Assistant Operating System (formerly HassOS) is a Linux based operating system optimized to host [Home Assistant](https://www.home-assistant.io) and its [Add-ons](https://www.home-assistant.io/addons/).
+REL-10 branch: HAOS 10.2 (linux 6.1.29) (u-boot 2023.01)
 
-Home Assistant Operating System uses Docker as Container engine. It by default deploys the Home Assistant Supervisor as a container. Home Assistant Supervisor in turn uses the Docker container engine to control Home Assistant Core and Add-Ons in separate containers. Home Assistant Operating System is **not** based on a regular Linux distribution like Ubuntu. It is built using [Buildroot](https://buildroot.org/) and it is optimized to run Home Assistant. It targets single board compute (SBC) devices like the Raspberry Pi or ODROID but also supports x86-64 systems with UEFI.
+# Working:
 
-## Features
+- Ethernet (YT8531c)
+- Wifi + Bluetooth (UWE5622)
+- HDMI
+- USB ports
+- eMMC
+- SD Card Reader
 
-- Lightweight and memory-efficient
-- Minimized I/O
-- Over The Air (OTA) updates
-- Offline updates
-- Modular using Docker container engine
+# Untested:
 
-## Supported hardware
+- Sound input/output (ES8316)
 
-- Raspberry Pi
-- Hardkernel ODROID
-- Asus Tinker Board
-- Generic x86-64 (e.g. Intel NUC)
-- Virtual appliances
+# Notes:
 
-See the full list and specific models [here](./Documentation/boards/README.md)
+On first build, you might find that the image doesn’t contain the wifi/bt module due to what seems like a package build order issue. Prior to performing the rebuild, delete the previously built package directories in `output/build/linux-6.1.29`,  `output/build/linux-headers-6.1.29`, `output/images/haos*` and `release/haos*`
 
-## Getting Started
+To install the image directly to the internal eMMC device (if available), use an Armbian `https://www.armbian.com/orange-pi-4-lts/` or Manjaro `https://manjaro.org/download/` image for OrangePi 4 LTS pre-installed on an SD card, then copy the HAOS image to the live system. Extract the image using `unxz` then use `lsblk` to determine the correction location to write the image to the internal eMMC (look for the eMMC size in the output which matches your board size). Write the image to eMMC using `dd`, for example: `sudo dd if=haos.img of=/dev/mmcblk0 bs=10MB`
 
-If you just want to use Home Assistant the official [getting started guide](https://www.home-assistant.io/getting-started/) and [installation instructions](https://www.home-assistant.io/hassio/installation/) take you through how to download Home Assistant Operating System and get it running on your machine.
+Once the image is written, power off the device and remove the SD card. Connect an ethernet cable, power on the device. Wait a few minutes and then connect to http://homeassistant.local:8123 or check your router for the correct IP4 address.
 
-If you're interested in finding out more about Home Assistant Operating System and how it works read on...
+# Thanks:
 
-## Development
-
-If you don't have experience with embedded systems, Buildroot or the build process for Linux distributions it is recommended to read up on these topics first (e.g. [Bootlin](https://bootlin.com/docs/) has excellent resources).
-
-The Home Assistant Operating System documentation can be found on the [Home Assistant Developer Docs website](https://developers.home-assistant.io/docs/operating-system).
-
-### Components
-
-- **Bootloader:**
-  - [Barebox](https://barebox.org/) for devices that support UEFI
-  - [U-Boot](https://www.denx.de/wiki/U-Boot) for devices that don't support UEFI
-- **Operating System:**
-  - [Buildroot](https://buildroot.org/) LTS Linux
-- **File Systems:**
-  - [SquashFS](https://www.kernel.org/doc/Documentation/filesystems/squashfs.txt) for read-only file systems (using LZ4 compression)
-  - [ZRAM](https://www.kernel.org/doc/Documentation/blockdev/zram.txt) for `/tmp`, `/var` and swap (using LZ4 compression)
-- **Container Platform:**
-  - [Docker Engine](https://docs.docker.com/engine/) for running Home Assistant components in containers
-- **Updates:**
-  - [RAUC](https://rauc.io/) for Over The Air (OTA) and USB updates
-- **Security:**
-  - [AppArmor](https://apparmor.net/) Linux kernel security module
-
-### Development builds
-
-The Development build GitHub Action Workflow is a manually triggered workflow
-which creates Home Assistant OS development builds. The development builds are
-available at [os-builds.home-assistant.io](https://os-builds.home-assistant.io/).
+Huge thank you to @agners and @citruz who helped me immensely with this effort and to all the devs who worked on patches (and continue to work) to support this board. Recommended reading for beginners of building embedded linux: `https://www.thirtythreeforty.net/series/mastering-embedded-linux`

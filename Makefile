@@ -5,7 +5,7 @@ BUILDROOT=$(BUILDDIR)/buildroot
 BUILDROOT_EXTERNAL=$(BUILDDIR)/buildroot-external
 DEFCONFIG_DIR = $(BUILDROOT_EXTERNAL)/configs
 VERSION_DATE := $(shell date --utc +'%Y%m%d')
-VERSION_DEV := "dev$(VERSION_DATE)"
+VERSION_DEV := ""
 
 TARGETS := $(notdir $(patsubst %_defconfig,%,$(wildcard $(DEFCONFIG_DIR)/*_defconfig)))
 TARGETS_CONFIG := $(notdir $(patsubst %_defconfig,%-config,$(wildcard $(DEFCONFIG_DIR)/*_defconfig)))
