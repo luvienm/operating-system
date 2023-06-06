@@ -17,7 +17,7 @@ dev branch: HAOS 11 (linux 6.1.31) (u-boot 2023.01)
 
 # Notes:
 
-On first build, you might find that the image doesn’t contain the wifi/bt module due to what seems like a package build order issue. Prior to performing the rebuild, delete the previously built package directories in `output/build/linux-6.1.29`,  `output/build/linux-headers-6.1.29`, `output/images/haos*` and `release/haos*`
+On first build, you might find that the image doesn’t contain the wifi/bt module due to what seems like a package build order issue. Prior to performing the rebuild, delete the previously built package directories in `output/build/linux-6.1.31`,  `output/build/linux-headers-6.1.31`, `output/images/haos*` and `release/haos*`
 
 To install the image directly to the internal eMMC device (if available), use an Armbian `https://www.armbian.com/orange-pi-4-lts/` or Manjaro `https://manjaro.org/download/` image for OrangePi 4 LTS pre-installed on an SD card, then copy the HAOS image to the live system. Extract the image using `unxz` then use `lsblk` to determine the correction location to write the image to the internal eMMC (look for the eMMC size in the output which matches your board size). Write the image to eMMC using `dd`, for example: `sudo dd if=haos.img of=/dev/mmcblk0 bs=10MB`
 
