@@ -13,9 +13,6 @@ function fix_rootfs() {
     rm -rf "${TARGET_DIR:?}/srv"
     rm -rf "${TARGET_DIR:?}/opt"
 
-    # Cleanup miscs
-    rm -rf "${TARGET_DIR}/usr/lib/modules-load.d"
-
     # systemd-update-done.service relies on writeable /var and /etc
     rm -f "${TARGET_DIR}/usr/lib/systemd/system/sysinit.target.wants/systemd-update-done.service"
 

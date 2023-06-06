@@ -10,6 +10,7 @@ KERNEL1_UUID="fc02a4f0-5350-406f-93a2-56cbed636b5f"
 OVERLAY_UUID="f1326040-5236-40eb-b683-aaa100a9afcf"
 DATA_UUID="a52a4597-fa3a-4851-aefd-2fbe9f849079"
 
+BOOT_SIZE=(32M 24M)
 BOOTSTATE_SIZE=8M
 SYSTEM_SIZE=256M
 KERNEL_SIZE=24M
@@ -44,8 +45,11 @@ function size2sectors() {
 
 
 function get_boot_size() {
-    # shellcheck disable=SC2153
-    echo "${BOOT_SIZE}"
+    if [ "${BOOT_SPL}" == "true" ]; then
+        echo "${BOOT_SIZE[1]}"
+    else
+        echo "${BOOT_SIZE[0]}"
+    fi
 }
 
 
@@ -53,7 +57,7 @@ function create_spl_image() {
     local boot_img="$(path_spl_img)"
 
     rm -f "${boot_img}"
-    truncate --size="${BOOT_SPL_SIZE}" "${boot_img}"
+    truncate --size=8M "${boot_img}"
 }
 
 
@@ -131,17 +135,13 @@ function _create_disk_gpt() {
     ##
     # Partition layout
 
+    # SPL
+    if [ "${BOOT_SPL}" == "true" ]; then
+        sgdisk -j 16384 "${hdd_img}"
+    fi
+
     # boot
     boot_offset="$(sgdisk -F "${hdd_img}")"
-    if [ "${BOOT_SPL}" == "true" ]; then
-        # Make sure boot partition is shifted by SPL size
-        boot_offset=$((boot_offset+$(size2sectors "${BOOT_SPL_SIZE}")))
-    fi
-    if [ "${BOARD_ID}" == "odroid-m1" ]; then
-        # Create partition for U-Boot binary (required by Hardkernel SPL to boot
-	# using default petitboot SPI
-        sgdisk -n "0:16384:+8M" -c 0:"uboot" -t 0:"21686148-6449-6E6F-744E-656564454649" "${hdd_img}"
-    fi
     sgdisk -n "0:${boot_offset}:+$(get_boot_size)" -c 0:"hassos-boot" -t 0:"C12A7328-F81F-11D2-BA4B-00A0C93EC93B" -u 0:${BOOT_UUID} "${hdd_img}"
 
     # Kernel 0
@@ -171,7 +171,7 @@ function _create_disk_gpt() {
 
     ##
     # Write Images
-    sgdisk -v "${hdd_img}"
+    sgdisk -v
     dd if="${boot_img}" of"=${hdd_img}" conv=notrunc,sparse bs=512 seek="${boot_offset}"
     dd if="${kernel_img}" of="${hdd_img}" conv=notrunc,sparse bs=512 seek="${kernel_offset}"
     dd if="${rootfs_img}" of="${hdd_img}" conv=notrunc,sparse bs=512 seek="${rootfs_offset}"
@@ -199,9 +199,7 @@ function _create_disk_mbr() {
     local hdd_img="$(hassos_image_name img)"
     local hdd_count=${DISK_SIZE:-2}
     local disk_layout="${BINARIES_DIR}/disk.layout"
-
-    # All boards with MBR disk layout have SPL
-    local boot_start=$(size2sectors "${BOOT_SPL_SIZE}")
+    local boot_start=$(size2sectors "8M")
 
     local boot_size=$(size2sectors "$(get_boot_size)")
     local kernel0_size=$(size2sectors "$KERNEL_SIZE")
@@ -280,9 +278,7 @@ function _fix_disk_spl_gpt() {
 
     sgdisk -t 1:"E3C9E316-0B5C-4DB8-817D-F92DF00215AE" "${hdd_img}"
     dd if="${BR2_EXTERNAL_HASSOS_PATH}/bootloader/mbr-spl.img" of="${hdd_img}" conv=notrunc bs=512 count=1
-
-    # Copy SPL, make sure to not overwrite GPT
-    dd if="${spl_img}" of="${hdd_img}" conv=notrunc bs=512 seek=64 skip=64
+    dd if="${spl_img}" of="${hdd_img}" conv=notrunc bs=512 seek=2 skip=2
 }
 
 
