@@ -31,9 +31,9 @@ index 656b609cb68..d2dc448501c 100644
 --- a/include/net/bluetooth/hci.h       2023-01-04 13:26:32.000000000 +0300
 +++ b/include/net/bluetooth/hci.h       2023-01-07 21:30:34.049388629 +0300
 @@ -294,6 +294,12 @@
- 	* to support it.
+ 	* during the hdev->setup vendor callback.
  	*/
- 	HCI_QUIRK_BROKEN_SET_RPA_TIMEOUT,
+ 	HCI_QUIRK_BROKEN_MWS_TRANSPORT_CONFIG,
 +
 +       /*
 +        * Device declares that support Park link status, but it really
